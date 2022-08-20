@@ -1,1 +1,2 @@
 @aave-protocol/=lib/aave-protocol/contracts
+@uniswap/=lib/v3-periphery/contracts
