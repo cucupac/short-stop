@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-contract Contract {}
+import "@aave-protocol/lendingpool/LendingPool.sol";
+
+contract ShortStop is LendingPool {}
