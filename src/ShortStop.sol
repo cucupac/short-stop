@@ -17,6 +17,7 @@ contract ShortStop is Pool, ERC20 {
     address public usdcPolygonAddress = 0x2791bca1f2de4661ed88a30c99a7a9449aa84174;
     address public aavePolygonAddress = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
     ERC20 usdcToken = ERC20(usdcPolygonAddress);
+    ERC20 shortToken = ERC20(shortTokenPolygonAddress); // NOTE: we are currently assuming that all shorted assets are non-native
     Pool aavePool = Pool(aavePolygonAddress);
 
     constructor(address shortTokenPolygonAddress, ISwapRouter _swapRouter) {
@@ -26,6 +27,7 @@ contract ShortStop is Pool, ERC20 {
    
 
     // Handle inital deposit from user
+    // NOTE: This assumes that this contract has already been authorized to move a user's tokens (via polygonscan or other means)
     function deposit(uint _amount) public payable {
         usdcToken.transferFrom(msg.sender, address(this), _amount);
         initiateLoan();
@@ -93,6 +95,8 @@ contract ShortStop is Pool, ERC20 {
 
     function closePosition() {
         swapToShortToken();
-        aavePool.repay(shortTokenPolygonAddress, uint(-1), 2, address(this));
+        uint shortTokenBalance = ERC20(shortTokenPolygonAddress).balanceOf(address(this));
+        shortToken.approve(aavePolygonAddress, shortTokenBalance);
+        aavePool.repay(shortTokenPolygonAddress, shortTokenBalance, 2, address(this)); // NOTE: uint(-1) was changed to shortTokenBalance
     }
 }
