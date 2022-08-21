@@ -1,2 +1,3 @@
-@aave-protocol/=lib/aave-protocol/contracts
+@aave-protocol/=lib/SOMETHING
 @uniswap/=lib/v3-periphery/contracts
+@openzeppelin-contracts/=lib/openzeppelin-contracts/contracts
