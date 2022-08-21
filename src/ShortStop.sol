@@ -44,7 +44,7 @@ contract ShortStop is Pool, ERC20 {
     }
 
     // Swap from Short Token to USDC
-    function swapToUSDC() private view {
+    function swapToUSDC() private {
         // 1. Get contract's short token balance
         uint shortTokenBalance = ERC20(shortTokenPolygonAddress).balanceOf(address(this));
         // 2. Approve Uniswap to spend our short tokens
@@ -68,13 +68,31 @@ contract ShortStop is Pool, ERC20 {
     }
 
     // Swap from USDC to ShortToken
-    function swapToShortToken() {
+    function swapToShortToken() private {
+        // 1. Get contract's short token balance
+        uint usdcBalance = ERC20(usdcPolygonAddress).balanceOf(address(this));
+        // 2. Approve Uniswap to spend our short tokens
+        TransferHelper.safeApprove(shortTokenPolygonAddress, address(swapRouter), usdcBalance);
 
+        // 3. Construct swap params
+        ISwapRouter.ExactInputSingleParams memory params =
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: usdcPolygonAddress,
+                tokenOut: shortTokenPolygonAddress,
+                fee: poolFee,
+                recipient: msg.sender,
+                deadline: block.timestamp,
+                amountIn: usdcBalance,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
+
+        // 4. Execute token swap.
+        amountOut = swapRouter.exactInputSingle(params);
+    }
+
+    function closePosition() {
+        swapToShortToken();
+        aavePool.repay(shortTokenPolygonAddress, uint(-1), 2, address(this));
     }
 }
-
-
-
-
-
-
