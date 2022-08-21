@@ -7,6 +7,7 @@ import "@aave-protocol/protocol/pool/Pool.sol";
 import "@uniswap/interfaces/ISwapRouter.sol";
 import "@uniswap/libraries/TransferHelper.sol";
 import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
+import { ISuperToken } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluidToken.sol";
 
 contract ShortStop is Pool, ERC20 {
 
@@ -15,33 +16,34 @@ contract ShortStop is Pool, ERC20 {
     uint24 public constant poolFee = 3000;
     address public shortTokenPolygonAddress;
     address public usdcPolygonAddress = 0x2791bca1f2de4661ed88a30c99a7a9449aa84174;
+    address public usdcxPolygonAddress = 0xCAa7349CEA390F89641fe306D93591f87595dc1F;
     address public aavePolygonAddress = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
     ERC20 usdcToken = ERC20(usdcPolygonAddress);
+    ISuperToken usdcxToken = ISuperToken(usdcxPolygonAddress);
     ERC20 shortToken = ERC20(shortTokenPolygonAddress); // NOTE: we are currently assuming that all shorted assets are non-native
     Pool aavePool = Pool(aavePolygonAddress);
 
     constructor(address shortTokenPolygonAddress, ISwapRouter _swapRouter) {
         shortTokenPolygonAddress = shortTokenPolygonAddress;
         swapRouter = _swapRouter;
+        usdcToken.approve(aavePolygonAddress, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
     }
    
 
-    // Handle inital deposit from user
-    // NOTE: This assumes that this contract has already been authorized to move a user's tokens (via polygonscan or other means)
-    function deposit(uint _amount) public payable {
-        usdcToken.transferFrom(msg.sender, address(this), _amount);
-        initiateLoan();
-    }
-
     // Use USD balance to initiate loan with Aave
-    function initiateLoan(uint _amount) private view {
-        // 1. Approve Aave's pool to spend money on this contract's behalf
-        usdcToken.approve(aavePolygonAddress, _amount);
-        // 2. Supply Aave with USDC collateral
-        aavePool.supply(usdcPolygonAddress, _amount, address(this), 0);
-        // 3. Borrow 1 Curve
+    function initiateLoan() private view {
+
+        // 1. Store in variable the amount of USDCx in contract
+        uint amountToDrain = usdcxToken.balanceOf(address(this));
+
+        // 2. Downgrade (unwrap) that amount of USDCx in the contract to USDC
+        usdcxToken.downgrade(amountToDrain);
+        
+        // 3. Supply Aave with USDC collateral
+        aavePool.supply(usdcPolygonAddress, amountToDrain, address(this), 0);
+        // 4. Borrow 1 Curve
         aavePool.borrow(shortTokenPolygonAddress, 1 ether, 2, 0, address(this));
-        // 4. Once loan is received, swap to USDC
+        // 5. Once loan is received, swap to USDC
         swapToUSDC();
     }
 

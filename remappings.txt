@@ -1,3 +1,4 @@
 @aave-protocol/=lib/aave-v3-core/contracts
 @uniswap/=lib/v3-periphery/contracts
 @openzeppelin-contracts/=lib/openzeppelin-contracts/contracts
+@superfluid-finance/=lib/protocol-monorepo/packages
