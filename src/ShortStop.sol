@@ -3,9 +3,11 @@
 pragma solidity ^0.8.15;
 pragma abicoder v2;
 
+
 import "@aave-protocol/protocol/pool/Pool.sol";
-import "@uniswap/interfaces/ISwapRouter.sol";
-import "@uniswap/libraries/TransferHelper.sol";
+import "@uniswap-v3-periphery/interfaces/ISwapRouter.sol";
+import "@uniswap-v3-periphery/libraries/TransferHelper.sol";
+import "@uniswap-v3-core/interfaces/callback/IUniswapV3SwapCallback.sol";
 import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 import { ISuperToken } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluidToken.sol";
 
