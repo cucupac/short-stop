@@ -3,3 +3,5 @@
 @uniswap-v3-core/=lib/v3-core/contracts
 @openzeppelin-contracts/=lib/openzeppelin-contracts/contracts
 @superfluid-finance/=lib/protocol-monorepo/packages
+@uniswap/v3-core/contracts/=lib/v3-core/contracts
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts
