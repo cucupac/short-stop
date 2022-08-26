@@ -28,20 +28,16 @@ contract ShortStop {
     constructor(address _shortTokenPolygonAddress, ISwapRouter _swapRouter) {
         shortTokenPolygonAddress = _shortTokenPolygonAddress;
         swapRouter = _swapRouter;
-        usdcToken.approve(aavePolygonAddress, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         admin = payable(msg.sender);
+        usdcToken.approve(aavePolygonAddress, 1000000000000000000000000000000000);
     }
    
+    
 
     // Use USD balance to initiate loan with Aave
     function initiateLoan() public {
 
-        // 1. Store in variable the amount of USDCx in contract
-        uint amountToDrain = usdcxToken.balanceOf(address(this));
-
-        // 2. Downgrade (unwrap) that amount of USDCx in the contract to USDC
-        usdcxToken.downgrade(amountToDrain);
-        
+        uint amountToDrain = usdcToken.balanceOf(address(this));
         // 3. Supply Aave with USDC collateral
         aavePool.supply(usdcPolygonAddress, amountToDrain, address(this), 0);
         // 4. Borrow 1 Curve
@@ -51,7 +47,7 @@ contract ShortStop {
     }
 
     // Swap from Short Token to USDC
-    function swapToUSDC() private {
+    function swapToUSDC() public {
         // 1. Get contract's short token balance
         uint shortTokenBalance = IERC20(shortTokenPolygonAddress).balanceOf(address(this));
         // 2. Approve Uniswap to spend our short tokens
