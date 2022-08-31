@@ -11,39 +11,40 @@ import "@uniswap-v3-periphery/libraries/TransferHelper.sol";
 contract TokenSwap {
 
     // Storage Variables
-    ISwapRouter public immutable swapRouter;
-    uint24 public constant poolFee = 3000;
-    address public tokenGive = 0x0000000000000000000000000000000000001010;
-    address public tokenReceive = 0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa;
-    // IERC20 maticToken = IERC20(tokenGive);    // NOTE : Is this ERC20?
-    IERC20 wethToken = IERC20(tokenReceive); // NOTE: we are currently assuming that all shorted assets are non-native
+    uint24 public constant poolFee = 3000;                                           // 0.3%
+    address public tokenGiveAddress = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;    // Goerli UNI
+    address public tokenReceiveAddress = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6; // Goerli Uniswap WETH
+    ISwapRouter public immutable swapRouter;                                         // SwapRouter interface
 
     constructor(ISwapRouter _swapRouter) {
-        swapRouter = _swapRouter;
+        swapRouter = _swapRouter;  // 0xE592427A0AEce92De3Edee1F18E0157C05861564
     } 
 
     // Swap from matic to weth
-    function swapToWeth() public {
-        // 1. Get contract’s matic token balance
-        uint maticBalance = address(this).balance;
-        // 2. Approve Uniswap to spend our matic tokens
-        TransferHelper.safeApprove(tokenGive, address(swapRouter), maticBalance);
+    function swapToWeth() public returns (bool) {
+        // 1. Set amountToSwap to the contract's supplyTokenAddress balance
+        uint amountToSwap = IERC20(tokenGiveAddress).balanceOf(address(this));
+
+        // 2. Approve Uniswap to access amountToSwap from this contract
+        TransferHelper.safeApprove(tokenGiveAddress, address(swapRouter), amountToSwap);
 
         // 3. Construct swap params
         ISwapRouter.ExactInputSingleParams memory params =
             ISwapRouter.ExactInputSingleParams({
-                tokenIn: tokenGive,
-                tokenOut: tokenReceive,
+                tokenIn: tokenGiveAddress,
+                tokenOut: tokenReceiveAddress,
                 fee: poolFee,
-                recipient: msg.sender,
+                recipient: address(this),
                 deadline: block.timestamp,
-                amountIn: maticBalance,
+                amountIn: amountToSwap,
                 amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
             });
 
-        // 4. Execute token swap.
+        // 4. Execute token swap
         swapRouter.exactInputSingle(params);
+
+        return true;
     }
 
     event Received(address, uint);
@@ -51,3 +52,6 @@ contract TokenSwap {
         emit Received(msg.sender, msg.value);
     }
 }
+
+// Full successful swap test on the below contract
+// 0xE1d9c063Bd258C4EEC34a9e872e33c7626473AAb

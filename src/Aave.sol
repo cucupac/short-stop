@@ -19,13 +19,13 @@ contract Aave {
     constructor() {}
     
     function supply() public returns (bool) {
-        // 1. Ensure we are not approving more than the contract has
+        // 1. Set amountToDrain to the contract's supplyTokenAddress balance
         uint amountToDrain = IERC20(supplyTokenAddress).balanceOf(address(this));
 
-        // 2. Approve our contract to access 1000 USDC from the user
+        // 2. Approve Aave pool to access amountToDrain from this contract 
         IERC20(supplyTokenAddress).approve(aavePoolAddress, amountToDrain);
 
-        // 3. Supply 1 USDC
+        // 3. Supply amountToDrain to Aave pool
         IPool(aavePoolAddress).supply(supplyTokenAddress, amountToDrain, address(this), 0);
 
         return true;
@@ -44,5 +44,5 @@ contract Aave {
     }
 }
 
-// Full successful supply-borrow on the below contract
+// Full successful supply-borrow test on the below contract
 // 0xDF1742fE5b0bFc12331D8EAec6b478DfDbD31464
