@@ -1,6 +1,6 @@
-// contracts/RunChallenger.sol
+// contracts/ShortStop.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.10;
 pragma abicoder v2;
 
 import "@aave-protocol/protocol/pool/Pool.sol";
@@ -17,19 +17,19 @@ contract ShortStop {
     ISwapRouter public immutable swapRouter;
     uint24 public constant poolFee = 3000;
     address public shortTokenPolygonAddress;
-    address public usdcPolygonAddress = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
-    address public usdcxPolygonAddress = 0xCAa7349CEA390F89641fe306D93591f87595dc1F;
-    address public aavePolygonAddress = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
+    address public usdcPolygonAddress = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174; //Polygon Mainnet
+    address public usdcxPolygonAddress = 0xCAa7349CEA390F89641fe306D93591f87595dc1F; //Polygon Mainnet
+    address public aavePoolPolygonAddress = 0x794a61358D6845594F94dc1DB02A252b5b4814aD; //Polygon Mainnet
     IERC20 usdcToken = IERC20(usdcPolygonAddress);
     ISuperToken usdcxToken = ISuperToken(usdcxPolygonAddress);
     IERC20 shortToken = IERC20(shortTokenPolygonAddress); // NOTE: we are currently assuming that all shorted assets are non-native
-    Pool aavePool = Pool(aavePolygonAddress);
+    Pool aavePool = Pool(aavePoolPolygonAddress);
 
     constructor(address _shortTokenPolygonAddress, ISwapRouter _swapRouter) {
         shortTokenPolygonAddress = _shortTokenPolygonAddress;
         swapRouter = _swapRouter;
         admin = payable(msg.sender);
-        usdcToken.approve(aavePolygonAddress, 1000000000000000000000000000000000);
+        usdcToken.approve(aavePoolPolygonAddress, 1000000000000000000000000000000000);
     }
    
     
@@ -97,7 +97,7 @@ contract ShortStop {
     function closePosition() public {
         swapToShortToken();
         uint shortTokenBalance = IERC20(shortTokenPolygonAddress).balanceOf(address(this));
-        shortToken.approve(aavePolygonAddress, shortTokenBalance);
+        shortToken.approve(aavePoolPolygonAddress, shortTokenBalance);
         aavePool.repay(shortTokenPolygonAddress, shortTokenBalance, 2, address(this)); // NOTE: uint(-1) was changed to shortTokenBalance
     }
 
