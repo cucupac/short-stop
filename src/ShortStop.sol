@@ -8,7 +8,7 @@ import "@uniswap-v3-periphery/interfaces/ISwapRouter.sol";
 import "@uniswap-v3-periphery/libraries/TransferHelper.sol";
 import "@uniswap-v3-core/interfaces/callback/IUniswapV3SwapCallback.sol";
 import "@openzeppelin-contracts/token/ERC20/IERC20.sol";
-import { ISuperToken } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperToken.sol";
+import "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperToken.sol";
 
 contract ShortStop {
 
